@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>MUGEN C-400</title>
+  <title>RaspberryPi(debian)にL-02Cを繋いでPPP接続を行う＆PPP再接続を自動にする方法 - MUGEN C-400</title>
   <meta name="author" content="Hideyuki Takei">
 
   
-  <meta name="description" content="最近はまたメガネ屋さんのクレジットカード情報が流出しました！！こういうセキュアな情報へアクセスするための攻撃は、サーバなどのソフトウェアだけでなく、ハードウェアでも起こりえます。 これらの攻撃に対抗するためには、ハードウェア／ソフトウェアでセキュアな情報をデータ認証したり、 &hellip;">
+  <meta name="description" content="今年、僕たちは植木を作る。 https://github.com/hideyuki/ueki 植木型のソーシャル植物ロボット。 盆栽が動くんだ。わくわくする。 ということで、さっそくその準備だ。RaspberryPiを使っているが、debianが動いているし使い方も全く変わらない。 L- &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.embodiedweb.net/blog/">
+  <link rel="canonical" href="http://www.embodiedweb.net/blog/blog/2012/12/31/connect-ppp-on-raspberrypi-debina/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
    <link href="/stylesheets/data-table.css" media="screen, projection" rel="stylesheet" type="text/css" />
@@ -73,247 +73,12 @@
 </nav> -->
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/03/15/common-attack-crypto/">暗号の解読方法とその対策</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-03-15T20:55:00+09:00" pubdate data-updated="true">Mar 15<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近はまた<a href="http://www.j-cast.com/2013/03/15169841.html">メガネ屋さんのクレジットカード情報が流出</a>しました！！こういうセキュアな情報へアクセスするための攻撃は、サーバなどのソフトウェアだけでなく、ハードウェアでも起こりえます。</p>
-
-<p>これらの攻撃に対抗するためには、ハードウェア／ソフトウェアでセキュアな情報をデータ認証したり、個体のクローンを作成できないように相手認証する、などの認証が必要です。その認証を実現するにあたって、なるべく強力な暗号を採用しています。</p>
-
-<p>今回はその暗号に対する攻撃方法と、それに対する対策を見てきましょう。</p>
-
-<p>よくある攻撃方法としては、以下のものがあります。</p>
-
-<ul>
-<li>中間者攻撃 (Man in the middle)</li>
-<li>ブルートフォース攻撃 (Brute force)</li>
-<li>反射攻撃 (Replay attack)</li>
-<li>RAMモニタリング攻撃 (RAM monitoring)</li>
-<li>マイクロコントローラのプログラム(ファーム)のリバースエンジニアリング</li>
-<li>ハードウェア攻撃</li>
-</ul>
-
-
-<p>それぞれの詳細と対策を以下に述べていきます。</p>
-
-<h2>中間者攻撃 (Man in the middle)</h2>
-
-<p>この攻撃はバスモニターとロジアナを使って行われます。</p>
-
-<p>1-wireで繋がれている認証デバイスのピンをキャプチャし、認証デバイスから返ってくるデータを取得します。そして、認証デバイスとホストシステムとのコネクションを一時的に中断させ、中断している暗号データとは違うデータを攻撃者が挿入していきます。そこで得られたデータは暗号のデコードツールとして使われます。</p>
-
-<p>SHA-256 の1方向ハッシュ関数はこの種の攻撃を防ぐことができます。チャレンジ（入力）を求めるためのシークレットデータを知ることなしに、攻撃者はー正しいレスポンス(出力)を予測することはできません。チャレンジやレスポンスのいつくかのビットを変えると、ホストシステムはチャレンジ-レスポンスのペアを無効と判断します。</p>
-
-<p>もし固定のチャレンジ-レスポンスのペアが使っている場合、攻撃者はあらかじめすべてのチャレンジを知らなければなりません。また、可変のチャレンジ-レスポンスのペアの場合は、予測は非常に困難になり攻撃は成功しないでしょう。</p>
-
-<h2>ブルートフォース攻撃 (Brute force)</h2>
-
-<p>この攻撃方法は中間者攻撃に似ており、同様にバスをキャプチャします。攻撃者はそれらのデータをコンピュータに移し解析します。たいていの場合、チャレンジとして結合されるシークレットを1からすべて試し、先に記録したレスポンスが得られたら成功です。</p>
-
-<p>しかし SHA-256 の場合、シークレットはとてつもなく巨大なキーが設定されているので、この攻撃が成功するには膨大な時間が必要となります。ゆえに限りなく不可能です。</p>
-
-<h2>反射攻撃 (Replay attack)</h2>
-
-<p>反射攻撃は中間者攻撃とほぼ同じです。認証デバイス-ホストシステム間のバスをモニタリング &amp; 記録し、それらのデータをホストシステムに戻します。そうすると、ホストしてムは正しいデータとして判断されます。</p>
-
-<p>この攻撃を阻止するには、毎回変化するチャレンジを使用します。たいていは、乱数をホストシステムで作成し、それをチャレンジとして使用しています。乱数のチャレンジから作成されるMAC (Message Authentication Code) は、毎回ユニークな値となり、レスポンスがモニタリング &amp; 記録されたとしても次回はチャレンジが変わるので無効となります。</p>
-
-<p>この攻撃が成功するには乱数が本当の乱数でない時だけです。(C言語のRANDで生成される擬似乱数は使用してはいけません) ですので、反射攻撃においては乱数生成器に気をつけてください。もし可能なら、FIPS の擬似乱数生成器を利用しましょう。</p>
-
-<h2>RAMモニタリング攻撃 (RAM monitoring)</h2>
-
-<p>コンピュータやマイクロプロセッサのメモリを定期的にスナップショットをとる手法です。メモリーに存在するシークレットはスナップショットから抽出することができます。この攻撃方法はたいてい認証チップからの期待されたレスポンスを計算するためにシークレットを使う必要があるためホストシステムに搭載されます。</p>
-
-<p>この攻撃を防ぐためには、MACを算出する時にシークレットをRAMに展開することがない認証チップを採用する必要がります。そうすることでRAMを読まれてもシークレットを発見されることはありません。</p>
-
-<p>また、認証チップと接続されるマイクロコントローラは以下の点を注意して実装する必要があります。</p>
-
-<ul>
-<li>新規コードの追加/読み取りの禁止</li>
-<li>JTAGやテスト/プログラミングのインタフェースの無効化</li>
-<li>内部メモリのリソースへのアクセスを禁止</li>
-<li>自己プログラミング禁止</li>
-<li>コードセグメントにコードをフィットさせる</li>
-<li>コードはややこしく書く。きれいに書かない
-
-<ul>
-<li>C の struct はデータが整った状態でメモリーに格納されてしまう</li>
-<li>普通良いと言われているコーディングスタンダートは、この場合“逆に”良くない</li>
-<li>すくなくとも数字はランダムに格納し、スタックは必要な時だけ使おう</li>
-</ul>
-</li>
-</ul>
-
-
-<p>ちゃんと最後にマイコンのヒューズの設定をしましょう！</p>
-
-<p>そして、RAMはなるべく使わないように心がけましょう。。(きびしい)</p>
-
-<h2>マイクロコントローラのプログラム(ファーム)のリバースエンジニアリング</h2>
-
-<p>ホストのプログラムが抽出されたり、セキュリティーチェックをパスするために編集されたり、新規コードを挿入されれば、たくさんの偽物デバイスを生むことになります。</p>
-
-<p>まず1つ目の防御方法として、読み出し／コピーが困難なROMに格納されるブートローダです。
-ROMに入ったブートローダはユーザコードよりも変更が難しく、防御が簡単です。</p>
-
-<p>2つ目に、コンパイラの最適化を有効にしておきましょう。最近のリバースコンパイラはなかなか良くなってきていますが、最適化のかかったコードの解析はアマチュアにとってはとても厳しいものです。</p>
-
-<h2>ハードウェア攻撃</h2>
-
-<p>ハードウェア攻撃は、文字通り物理的に値を読み出す攻撃手法です。</p>
-
-<p>この攻撃から完璧に防ぐためには、外部から壊すことができないチップを採用する必要があります。(といっても、そのようなことはほぼ不可能です)</p>
-
-<p>ハードウェア攻撃をなるべく阻止するように設計された認証チップを使いましょう。</p>
-
-<hr />
-
-<h1>おわりに</h1>
-
-<p>上記では暗号の解読や機械に対しての攻撃方法を挙げていましたが、それ以外にも人や暗号システムに攻撃することも可能です。</p>
-
-<ul>
-<li>人へのアタック：こっそりオフィスに忍び込んで手書きのパスワードを手に入れる。PCの盗難など。</li>
-<li>バックドアの入り方の流出：そもそもバックドアは作らないように、、</li>
-</ul>
-
-
-<p>BCASは誰かがバックドアの入り方を流出(?!)させてBCASの暗号が無効化されましたね。(新しいBCASではバックドア自体がなくなっているようですが、、)</p>
-
-<p>まだまだ暗号の旅は続く、、</p>
-
-<h2>参考文献</h2>
-
-<ul>
-<li><a href="http://en.wikipedia.org/wiki/SHA-2">http://en.wikipedia.org/wiki/SHA-2</a></li>
-<li><a href="http://japan.maximintegrated.com/app-notes/index.mvp/id/3675">http://japan.maximintegrated.com/app-notes/index.mvp/id/3675</a></li>
-<li><a href="http://dev.sbins.co.jp/cryptography/cryptography01.html">http://dev.sbins.co.jp/cryptography/cryptography01.html</a></li>
-<li><a href="http://www.atmel.jp/ja/jp/devices/ATSHA204.aspx?tab=documents">http://www.atmel.jp/ja/jp/devices/ATSHA204.aspx?tab=documents</a></li>
-<li><a href="http://www.wani.net/bak/crypt/attack.htm">http://www.wani.net/bak/crypt/attack.htm</a></li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/02/06/freebase-and-new-youtube-data-api/">Freebase と 新しい Youtube Data Api を使う</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-02-06T02:05:00+09:00" pubdate data-updated="true">Feb 6<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>サンプルを作った</h2>
-
-<p> <a href="https://github.com/hideyuki/new-youtube-js-sample">https://github.com/hideyuki/new-youtube-js-sample</a></p>
-
-<p><a href="http://blog.embodiedweb.net/new-youtube-js-sample/"><img src="../images/freebase_youtube.png" alt="image" /></a></p>
-
-<p> キーワードを入れるとそれに対応するトピックが出てきて、そのトピックをクリックするとトピックに対応するyoutubeプレイリストを取得。プレイリストの画像をクリックすると曲を取得できる。</p>
-
-<h2>freebaseの一般的なページ</h2>
-
-<p><a href="http://www.freebase.com/view/en/pop_music#broadcast">http://www.freebase.com/view/en/pop_music#broadcast</a></p>
-
-<p>ここに表示されている情報は以下の「トピックの情報を取得」でゲッツできる</p>
-
-<h2>トピックの情報を取得</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>https://www.googleapis.com/freebase/v1/topic/m/02w4v?filter=allproperties</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>topicの画像取得</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>http://img.freebase.com/api/trans/image_thumb/en/death_metal?maxheight=200&mode=fit&maxwidth=150</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>語句で検索</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>https://www.googleapis.com/freebase/v1/search?query=beatles&limit=100</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>MQLで検索</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>https://www.googleapis.com/freebase/v1/mqlread?query=%5B%7B%22type%22%3A%22/music/genre%22%2C%22id%22%3Anull%2C%22name%22%3Anull%2C%22limit%22%3A100%7D%5D&cursor</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>参考</h2>
-
-<ul>
-<li><a href="https://developers.google.com/youtube/v3/">Google launced YouTube API (v3) for experimental. </a></li>
-<li><a href="https://developers.google.com/freebase/">Freebase integration via topics and universal search</a></li>
-<li><a href="http://wiki.freebase.com/wiki/MQL_Manual">MQL manual</a></li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/12/31/connect-ppp-on-raspberrypi-debina/">RaspberryPi(debian)にL-02Cを繋いでPPP接続を行う＆PPP再接続を自動にする方法</a></h1>
+      <h1 class="entry-title">RaspberryPi(debian)にL-02Cを繋いでPPP接続を行う＆PPP再接続を自動にする方法</h1>
     
     
       <p class="meta">
@@ -336,7 +101,7 @@ ROMに入ったブートローダはユーザコードよりも変更が難し�
   </header>
 
 
-  <div class="entry-content"><h2>今年、僕たちは植木を作る。</h2>
+<div class="entry-content"><h2>今年、僕たちは植木を作る。</h2>
 
 <p><a href="https://github.com/hideyuki/ueki">https://github.com/hideyuki/ueki</a></p>
 
@@ -515,18 +280,61 @@ ROMに入ったブートローダはユーザコードよりも変更が難し�
 
 <p>めでたし、めでたし。</p>
 </div>
+
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Hideyuki Takei</span></span>
+
+      
+
+
+
+
+
+
+
+
   
 
 
-    </article>
+<time datetime="2012-12-31T09:29:00+09:00" pubdate data-updated="true">Dec 31<span>st</span>, 2012</time>
+      
+
+<span class="categories">
   
-  <div class="pagination">
+    <a class='category' href='/blog/categories/rpi-/'>rpi,</a>, <a class='category' href='/blog/categories/ueki/'>ueki</a>
+  
+</span>
+
+
+    </p>
     
-    <a href="archives">Blog Archives</a>
-    
-  </div>
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://www.embodiedweb.net/blog/blog/2012/12/31/connect-ppp-on-raspberrypi-debina/" data-via="" data-counturl="http://www.embodiedweb.net/blog/blog/2012/12/31/connect-ppp-on-raspberrypi-debina/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
 </div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/06/freebase-and-new-youtube-data-api/" title="Next Post: Freebase と 新しい youtube data api を使う">Freebase と 新しい youtube data api を使う &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
 <aside class="sidebar">
   
     <section>
@@ -569,6 +377,7 @@ ROMに入ったブートローダはユーザコードよりも変更が難し�
 
   
 </aside>
+
 
     </div>
   </div>
